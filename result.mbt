@@ -6,7 +6,7 @@
 
 ///|
 /// Extra links scraped out of a page, when `ExtrasOptions` asked for them.
-pub struct Extras {
+pub(all) struct Extras {
   links : Array[String]
   image_links : Array[String]
 } derive(Eq, @debug.Debug)
@@ -22,7 +22,7 @@ fn Extras::decode(json : Json) -> Extras {
 ///|
 /// What the request cost. `raw` holds Exa's full per-component breakdown
 /// (`search.neural`, `contents.text`, and so on).
-pub struct CostDollars {
+pub(all) struct CostDollars {
   total : Double
   raw : Json
 } derive(Eq, @debug.Debug)
@@ -37,7 +37,7 @@ fn CostDollars::decode(json : Json) -> CostDollars {
 ///
 /// The same shape is returned by `/search`, `/contents`, `/findSimilar` and as
 /// `/answer`'s citations, so fields not requested are simply absent.
-pub struct SearchResult {
+pub(all) struct SearchResult {
   url : String
   /// The document id to pass to `/contents`. Currently equal to the URL.
   id : String
@@ -97,7 +97,7 @@ fn decode_results(
 
 ///|
 /// A source backing part of a structured output.
-pub struct Citation {
+pub(all) struct Citation {
   url : String?
   title : String?
 } derive(Eq, @debug.Debug)
@@ -110,7 +110,7 @@ fn Citation::decode(json : Json) -> Citation {
 ///|
 /// Which sources back one field of a structured output, and how confident Exa
 /// is in it (`low`, `medium` or `high`).
-pub struct Grounding {
+pub(all) struct Grounding {
   field : String?
   confidence : String?
   citations : Array[Citation]
@@ -131,7 +131,7 @@ fn Grounding::decode(json : Json) -> Grounding {
 
 ///|
 /// The synthesised answer returned when a request supplied an `output_schema`.
-pub struct SynthesisOutput {
+pub(all) struct SynthesisOutput {
   /// A string when no schema was given, otherwise an object matching it.
   content : Json
   /// `content` when it is a plain string, for the common case.

@@ -1,6 +1,6 @@
 ///|
 /// Why one URL in a `/contents` request did not come back with content.
-pub struct ContentStatus {
+pub(all) struct ContentStatus {
   id : String
   /// `"success"` or `"error"`.
   status : String
@@ -28,7 +28,7 @@ pub fn ContentStatus::is_success(self : ContentStatus) -> Bool {
 
 ///|
 /// The result of a `/contents` call.
-pub struct ContentsResponse {
+pub(all) struct ContentsResponse {
   request_id : String?
   results : Array[SearchResult]
   /// One entry per requested URL, including the ones that failed. Check this

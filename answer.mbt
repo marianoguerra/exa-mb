@@ -20,7 +20,7 @@ pub impl ToJson for AnswerModel with fn to_json(self) {
 
 ///|
 /// The result of an `/answer` call.
-pub struct AnswerResponse {
+pub(all) struct AnswerResponse {
   request_id : String?
   /// A string, unless the request supplied an `output_schema`, in which case an
   /// object matching it. Use `answer_text` for the string case.

@@ -201,6 +201,46 @@ test "an api error surfaces as ExaError::Api" {
 Every response type also keeps the JSON it decoded from in a `raw` field, so a
 field Exa adds tomorrow is reachable today.
 
+The response types are `pub(all)`, so code that renders them can be tested
+against hand-built values without going through canned JSON. MoonBit struct
+literals need every field, so write one blank value per test module and spread
+from it:
+
+```mbt check
+///|
+fn blank(url : String) -> @exa.SearchResult {
+  {
+    url,
+    id: url,
+    title: None,
+    published_date: None,
+    author: None,
+    image: None,
+    favicon: None,
+    text: None,
+    summary: None,
+    highlights: [],
+    highlight_scores: [],
+    subpages: [],
+    extras: None,
+    raw: Json::null(),
+  }
+}
+
+///|
+test "response values can be built by hand" {
+  let untitled = blank("https://example.com")
+  assert_eq(untitled.title, None)
+  let titled = { ..blank("https://exa.ai"), title: Some("Exa"), }
+  assert_eq(titled.title, Some("Exa"))
+  assert_eq(titled.id, "https://exa.ai")
+}
+```
+
+Because these shapes are public, adding a field to a response type is a
+breaking change for such literals — new fields will land in a minor version,
+not a patch.
+
 ## Backends
 
 The core package builds everywhere. `marianoguerra/exa/async_http` follows

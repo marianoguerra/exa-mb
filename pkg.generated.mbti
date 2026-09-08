@@ -31,7 +31,7 @@ pub(all) enum AnswerModel {
 }
 pub impl ToJson for AnswerModel
 
-pub struct AnswerResponse {
+pub(all) struct AnswerResponse {
   request_id : String?
   answer : Json
   answer_text : String?
@@ -50,7 +50,7 @@ pub(all) enum Category {
 }
 pub impl ToJson for Category
 
-pub struct Citation {
+pub(all) struct Citation {
   url : String?
   title : String?
 } derive(Eq, @debug.Debug)
@@ -67,7 +67,7 @@ pub async fn Client::find_similar(Self, String, num_results? : Int, category? : 
 pub fn Client::new(&Transport, String, base_url? : String) -> Self
 pub async fn Client::search(Self, String, search_type? : SearchType, num_results? : Int, category? : Category, user_location? : String, include_domains? : Array[String], exclude_domains? : Array[String], start_published_date? : String, end_published_date? : String, start_crawl_date? : String, end_crawl_date? : String, moderation? : Bool, additional_queries? : Array[String], system_prompt? : String, output_schema? : Json, contents? : ContentsOptions) -> SearchResponse
 
-pub struct ContentStatus {
+pub(all) struct ContentStatus {
   id : String
   status : String
   error_tag : String?
@@ -88,7 +88,7 @@ pub struct ContentsOptions {
 pub fn ContentsOptions::new(text? : Text, highlights? : Highlights, summary? : Summary, livecrawl_timeout? : Int, max_age_hours? : Int, subpages? : Int, subpage_target? : SubpageTarget, extras? : ExtrasOptions) -> Self
 pub impl ToJson for ContentsOptions
 
-pub struct ContentsResponse {
+pub(all) struct ContentsResponse {
   request_id : String?
   results : Array[SearchResult]
   statuses : Array[ContentStatus]
@@ -96,12 +96,12 @@ pub struct ContentsResponse {
   raw : Json
 } derive(Eq, @debug.Debug)
 
-pub struct CostDollars {
+pub(all) struct CostDollars {
   total : Double
   raw : Json
 } derive(Eq, @debug.Debug)
 
-pub struct Extras {
+pub(all) struct Extras {
   links : Array[String]
   image_links : Array[String]
 } derive(Eq, @debug.Debug)
@@ -113,7 +113,7 @@ pub struct ExtrasOptions {
 pub fn ExtrasOptions::new(links? : Int, image_links? : Int) -> Self
 pub impl ToJson for ExtrasOptions
 
-pub struct Grounding {
+pub(all) struct Grounding {
   field : String?
   confidence : String?
   citations : Array[Citation]
@@ -159,7 +159,7 @@ pub fn MockTransport::new(Array[HttpResponse]) -> Self
 pub fn MockTransport::requests(Self) -> Array[HttpRequest]
 pub impl Transport for MockTransport
 
-pub struct SearchResponse {
+pub(all) struct SearchResponse {
   request_id : String?
   results : Array[SearchResult]
   output : SynthesisOutput?
@@ -168,7 +168,7 @@ pub struct SearchResponse {
   raw : Json
 } derive(Eq, @debug.Debug)
 
-pub struct SearchResult {
+pub(all) struct SearchResult {
   url : String
   id : String
   title : String?
@@ -225,7 +225,7 @@ pub struct SummaryOptions {
 pub fn SummaryOptions::new(query? : String, schema? : Json) -> Self
 pub impl ToJson for SummaryOptions
 
-pub struct SynthesisOutput {
+pub(all) struct SynthesisOutput {
   content : Json
   content_text : String?
   grounding : Array[Grounding]

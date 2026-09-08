@@ -46,7 +46,7 @@ pub impl ToJson for Category with fn to_json(self) {
 
 ///|
 /// The result of a `/search` call.
-pub struct SearchResponse {
+pub(all) struct SearchResponse {
   request_id : String?
   results : Array[SearchResult]
   /// Present only when the request supplied an `output_schema`.
