@@ -12,6 +12,15 @@ pub(all) struct Extras {
 } derive(Eq, @debug.Debug)
 
 ///|
+/// Build one directly, for tests and for code that synthesises results.
+pub fn Extras::new(
+  links? : Array[String] = [],
+  image_links? : Array[String] = [],
+) -> Extras {
+  { links, image_links, }
+}
+
+///|
 fn Extras::decode(json : Json) -> Extras {
   {
     links: get_str_array(json, "links"),
@@ -26,6 +35,15 @@ pub(all) struct CostDollars {
   total : Double
   raw : Json
 } derive(Eq, @debug.Debug)
+
+///|
+/// Build one directly, for tests and for code that synthesises results.
+pub fn CostDollars::new(
+  total : Double,
+  raw? : Json = Json::null(),
+) -> CostDollars {
+  { total, raw, }
+}
 
 ///|
 fn CostDollars::decode(json : Json) -> CostDollars {
@@ -54,6 +72,46 @@ pub(all) struct SearchResult {
   extras : Extras?
   raw : Json
 } derive(Eq, @debug.Debug)
+
+///|
+/// Build a result directly, without going through a response body.
+///
+/// Everything but the URL is optional, so a test for "a result with no title"
+/// is one line. `id` defaults to the URL, which is what Exa returns today, and
+/// `raw` to null — a hand-built result was not decoded from anything.
+pub fn SearchResult::new(
+  url : String,
+  id? : String,
+  title? : String,
+  published_date? : String,
+  author? : String,
+  image? : String,
+  favicon? : String,
+  text? : String,
+  summary? : String,
+  highlights? : Array[String] = [],
+  highlight_scores? : Array[Double] = [],
+  subpages? : Array[SearchResult] = [],
+  extras? : Extras,
+  raw? : Json = Json::null(),
+) -> SearchResult {
+  {
+    url,
+    id: id.unwrap_or(url),
+    title,
+    published_date,
+    author,
+    image,
+    favicon,
+    text,
+    summary,
+    highlights,
+    highlight_scores,
+    subpages,
+    extras,
+    raw,
+  }
+}
 
 ///|
 fn SearchResult::decode(
@@ -103,6 +161,12 @@ pub(all) struct Citation {
 } derive(Eq, @debug.Debug)
 
 ///|
+/// Build one directly, for tests and for code that synthesises results.
+pub fn Citation::new(url? : String, title? : String) -> Citation {
+  { url, title, }
+}
+
+///|
 fn Citation::decode(json : Json) -> Citation {
   { url: get_str(json, "url"), title: get_str(json, "title"), }
 }
@@ -115,6 +179,16 @@ pub(all) struct Grounding {
   confidence : String?
   citations : Array[Citation]
 } derive(Eq, @debug.Debug)
+
+///|
+/// Build one directly, for tests and for code that synthesises results.
+pub fn Grounding::new(
+  field? : String,
+  confidence? : String,
+  citations? : Array[Citation] = [],
+) -> Grounding {
+  { field, confidence, citations, }
+}
 
 ///|
 fn Grounding::decode(json : Json) -> Grounding {
@@ -139,6 +213,20 @@ pub(all) struct SynthesisOutput {
   grounding : Array[Grounding]
   raw : Json
 } derive(Eq, @debug.Debug)
+
+///|
+/// Build one directly, for tests and for code that synthesises results.
+///
+/// `content_text` is filled in from `content` when it is a plain string, the
+/// same way decoding does it.
+pub fn SynthesisOutput::new(
+  content? : Json = Json::null(),
+  grounding? : Array[Grounding] = [],
+  raw? : Json = Json::null(),
+) -> SynthesisOutput {
+  let content_text = if content is String(text) { Some(text) } else { None }
+  { content, content_text, grounding, raw, }
+}
 
 ///|
 fn SynthesisOutput::decode(json : Json) -> SynthesisOutput {

@@ -201,18 +201,37 @@ test "an api error surfaces as ExaError::Api" {
 Every response type also keeps the JSON it decoded from in a `raw` field, so a
 field Exa adds tomorrow is reachable today.
 
-The response types are `pub(all)`, so code that renders them can be tested
-against hand-built values without going through canned JSON. MoonBit struct
-literals need every field, so write one blank value per test module and spread
-from it:
+The response types can be built by hand, so code that renders them can be
+tested without going through canned JSON. `new` takes the one required field
+and leaves the rest optional:
 
 ```mbt check
 ///|
-fn blank(url : String) -> @exa.SearchResult {
-  {
-    url,
-    id: url,
-    title: None,
+test "response values can be built with new" {
+  let untitled = @exa.SearchResult::new("https://example.com")
+  assert_eq(untitled.title, None)
+  let titled = @exa.SearchResult::new("https://exa.ai", title="Exa")
+  assert_eq(titled.title, Some("Exa"))
+  assert_eq(titled.id, "https://exa.ai") // defaults to the url
+  let response = @exa.SearchResponse::new(
+    results=[titled, untitled],
+    cost_dollars=@exa.CostDollars::new(0.005),
+  )
+  assert_eq(response.results[1].title, None)
+}
+```
+
+The shapes are also public, so a struct literal works where you want every
+field spelled out — MoonBit needs all of them, and `..` spreads from an
+existing value:
+
+```mbt check
+///|
+test "response values can be built as literals" {
+  let result : @exa.SearchResult = {
+    url: "https://exa.ai",
+    id: "https://exa.ai",
+    title: Some("Exa"),
     published_date: None,
     author: None,
     image: None,
@@ -225,21 +244,14 @@ fn blank(url : String) -> @exa.SearchResult {
     extras: None,
     raw: Json::null(),
   }
-}
-
-///|
-test "response values can be built by hand" {
-  let untitled = blank("https://example.com")
-  assert_eq(untitled.title, None)
-  let titled = { ..blank("https://exa.ai"), title: Some("Exa"), }
-  assert_eq(titled.title, Some("Exa"))
-  assert_eq(titled.id, "https://exa.ai")
+  assert_eq(result, @exa.SearchResult::new("https://exa.ai", title="Exa"))
+  assert_eq({ ..result, title: None, }.title, None)
 }
 ```
 
-Because these shapes are public, adding a field to a response type is a
-breaking change for such literals — new fields will land in a minor version,
-not a patch.
+Because the shapes are public, adding a field to a response type breaks such
+literals — new fields land in a minor version, not a patch. Calls to `new` are
+unaffected, since a new field becomes a new optional argument.
 
 ## Backends
 

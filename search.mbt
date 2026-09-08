@@ -58,6 +58,19 @@ pub(all) struct SearchResponse {
 } derive(Eq, @debug.Debug)
 
 ///|
+/// Build a response directly, for testing code that consumes one.
+pub fn SearchResponse::new(
+  results? : Array[SearchResult] = [],
+  request_id? : String,
+  output? : SynthesisOutput,
+  cost_dollars? : CostDollars,
+  search_time? : Double,
+  raw? : Json = Json::null(),
+) -> SearchResponse {
+  { request_id, results, output, cost_dollars, search_time, raw, }
+}
+
+///|
 fn SearchResponse::decode(json : Json) -> SearchResponse raise ExaError {
   {
     request_id: get_str(json, "requestId"),

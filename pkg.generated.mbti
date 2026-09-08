@@ -39,6 +39,7 @@ pub(all) struct AnswerResponse {
   cost_dollars : CostDollars?
   raw : Json
 } derive(Eq, @debug.Debug)
+pub fn AnswerResponse::new(answer? : Json, citations? : Array[SearchResult], request_id? : String, cost_dollars? : CostDollars, raw? : Json) -> Self
 
 pub(all) enum Category {
   Company
@@ -54,6 +55,7 @@ pub(all) struct Citation {
   url : String?
   title : String?
 } derive(Eq, @debug.Debug)
+pub fn Citation::new(url? : String, title? : String) -> Self
 
 pub struct Client {
   transport : &Transport
@@ -74,6 +76,7 @@ pub(all) struct ContentStatus {
   http_status_code : Int?
 } derive(Eq, @debug.Debug)
 pub fn ContentStatus::is_success(Self) -> Bool
+pub fn ContentStatus::new(String, status? : String, error_tag? : String, http_status_code? : Int) -> Self
 
 pub struct ContentsOptions {
   text : Text?
@@ -95,16 +98,19 @@ pub(all) struct ContentsResponse {
   cost_dollars : CostDollars?
   raw : Json
 } derive(Eq, @debug.Debug)
+pub fn ContentsResponse::new(results? : Array[SearchResult], statuses? : Array[ContentStatus], request_id? : String, cost_dollars? : CostDollars, raw? : Json) -> Self
 
 pub(all) struct CostDollars {
   total : Double
   raw : Json
 } derive(Eq, @debug.Debug)
+pub fn CostDollars::new(Double, raw? : Json) -> Self
 
 pub(all) struct Extras {
   links : Array[String]
   image_links : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn Extras::new(links? : Array[String], image_links? : Array[String]) -> Self
 
 pub struct ExtrasOptions {
   links : Int?
@@ -118,6 +124,7 @@ pub(all) struct Grounding {
   confidence : String?
   citations : Array[Citation]
 } derive(Eq, @debug.Debug)
+pub fn Grounding::new(field? : String, confidence? : String, citations? : Array[Citation]) -> Self
 
 pub(all) enum Highlights {
   On
@@ -167,6 +174,7 @@ pub(all) struct SearchResponse {
   search_time : Double?
   raw : Json
 } derive(Eq, @debug.Debug)
+pub fn SearchResponse::new(results? : Array[SearchResult], request_id? : String, output? : SynthesisOutput, cost_dollars? : CostDollars, search_time? : Double, raw? : Json) -> Self
 
 pub(all) struct SearchResult {
   url : String
@@ -184,6 +192,7 @@ pub(all) struct SearchResult {
   extras : Extras?
   raw : Json
 } derive(Eq, @debug.Debug)
+pub fn SearchResult::new(String, id? : String, title? : String, published_date? : String, author? : String, image? : String, favicon? : String, text? : String, summary? : String, highlights? : Array[String], highlight_scores? : Array[Double], subpages? : Array[Self], extras? : Extras, raw? : Json) -> Self
 
 pub(all) enum SearchType {
   Auto
@@ -231,6 +240,7 @@ pub(all) struct SynthesisOutput {
   grounding : Array[Grounding]
   raw : Json
 } derive(Eq, @debug.Debug)
+pub fn SynthesisOutput::new(content? : Json, grounding? : Array[Grounding], raw? : Json) -> Self
 
 pub(all) enum Text {
   On

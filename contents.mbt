@@ -10,6 +10,17 @@ pub(all) struct ContentStatus {
 } derive(Eq, @debug.Debug)
 
 ///|
+/// Build a status directly, for testing code that branches on one.
+pub fn ContentStatus::new(
+  id : String,
+  status? : String = "success",
+  error_tag? : String,
+  http_status_code? : Int,
+) -> ContentStatus {
+  { id, status, error_tag, http_status_code, }
+}
+
+///|
 fn ContentStatus::decode(json : Json) -> ContentStatus {
   let error = field(json, "error")
   {
@@ -37,6 +48,18 @@ pub(all) struct ContentsResponse {
   cost_dollars : CostDollars?
   raw : Json
 } derive(Eq, @debug.Debug)
+
+///|
+/// Build a response directly, for testing code that consumes one.
+pub fn ContentsResponse::new(
+  results? : Array[SearchResult] = [],
+  statuses? : Array[ContentStatus] = [],
+  request_id? : String,
+  cost_dollars? : CostDollars,
+  raw? : Json = Json::null(),
+) -> ContentsResponse {
+  { request_id, results, statuses, cost_dollars, raw, }
+}
 
 ///|
 fn ContentsResponse::decode(json : Json) -> ContentsResponse raise ExaError {

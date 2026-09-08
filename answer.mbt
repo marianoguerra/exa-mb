@@ -33,6 +33,22 @@ pub(all) struct AnswerResponse {
 } derive(Eq, @debug.Debug)
 
 ///|
+/// Build a response directly, for testing code that consumes one.
+///
+/// `answer_text` is filled in from `answer` when it is a plain string, the same
+/// way decoding does it.
+pub fn AnswerResponse::new(
+  answer? : Json = Json::null(),
+  citations? : Array[SearchResult] = [],
+  request_id? : String,
+  cost_dollars? : CostDollars,
+  raw? : Json = Json::null(),
+) -> AnswerResponse {
+  let answer_text = if answer is String(text) { Some(text) } else { None }
+  { request_id, answer, answer_text, citations, cost_dollars, raw, }
+}
+
+///|
 fn AnswerResponse::decode(json : Json) -> AnswerResponse raise ExaError {
   let citations = []
   for item in get_array(json, "citations") {

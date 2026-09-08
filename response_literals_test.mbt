@@ -1,6 +1,7 @@
-// The response types are `pub(all)`, so a consumer testing code that renders
-// them can build values by hand instead of round-tripping through canned JSON.
-// These tests are written the way such a consumer would write them.
+// The response types can be built two ways: `new`, where everything optional
+// really is optional, and a plain struct literal, since the shapes are public.
+// These tests are written the way a consumer testing a renderer would write
+// them, and cover both.
 
 ///|
 /// A stand-in for downstream rendering code.
@@ -13,31 +14,9 @@ fn render(result : @exa.SearchResult) -> String {
 }
 
 ///|
-/// MoonBit struct literals need every field, so a test module that builds more
-/// than one result is best off writing this once and spreading from it.
-fn blank_result(url : String) -> @exa.SearchResult {
-  {
-    url,
-    id: url,
-    title: None,
-    published_date: None,
-    author: None,
-    image: None,
-    favicon: None,
-    text: None,
-    summary: None,
-    highlights: [],
-    highlight_scores: [],
-    subpages: [],
-    extras: None,
-    raw: Json::null(),
-  }
-}
-
-///|
-test "a result with no title" {
+test "a result with no title takes one line" {
   inspect(
-    render(blank_result("https://exa.ai")),
+    render(@exa.SearchResult::new("https://exa.ai")),
     content=(
       #|(untitled) — https://exa.ai
     ),
@@ -45,8 +24,8 @@ test "a result with no title" {
 }
 
 ///|
-test "a result with no published date" {
-  let result = { ..blank_result("https://exa.ai"), title: Some("Exa"), }
+test "a result with no published date takes one line" {
+  let result = @exa.SearchResult::new("https://exa.ai", title="Exa")
   inspect(
     render(result),
     content=(
@@ -57,36 +36,33 @@ test "a result with no published date" {
 
 ///|
 test "a fully populated result" {
-  let result = {
-    ..blank_result("https://exa.ai"),
-    title: Some("Exa"),
-    published_date: Some("2024-05-01"),
-    author: Some("Exa Labs"),
-    highlights: ["a highlight"],
-    extras: Some({ links: ["https://exa.ai/pricing"], image_links: [], }),
-  }
+  let result = @exa.SearchResult::new(
+    "https://exa.ai",
+    title="Exa",
+    published_date="2024-05-01",
+    author="Exa Labs",
+    highlights=["a highlight"],
+    extras=@exa.Extras::new(links=["https://exa.ai/pricing"]),
+  )
   inspect(
     render(result),
     content=(
       #|Exa — https://exa.ai (2024-05-01)
     ),
   )
+  assert_eq(result.id, "https://exa.ai")
   assert_eq(result.extras.unwrap().links, ["https://exa.ai/pricing"])
 }
 
 ///|
 test "a whole response can be assembled for a renderer test" {
-  let response : @exa.SearchResponse = {
-    request_id: None,
-    results: [
-      { ..blank_result("https://exa.ai"), title: Some("Exa"), },
-      blank_result("https://example.com"),
+  let response = @exa.SearchResponse::new(
+    results=[
+      @exa.SearchResult::new("https://exa.ai", title="Exa"),
+      @exa.SearchResult::new("https://example.com"),
     ],
-    output: None,
-    cost_dollars: Some({ total: 0.005, raw: Json::null(), }),
-    search_time: None,
-    raw: Json::null(),
-  }
+    cost_dollars=@exa.CostDollars::new(0.005),
+  )
   let lines = []
   for result in response.results {
     lines.push(render(result))
@@ -102,29 +78,96 @@ test "a whole response can be assembled for a renderer test" {
 
 ///|
 test "a contents response with a failed url can be built by hand" {
-  let response : @exa.ContentsResponse = {
-    request_id: None,
-    results: [{ ..blank_result("https://exa.ai"), text: Some("Exa is..."), }],
-    statuses: [
-      {
-        id: "https://exa.ai",
-        status: "success",
-        error_tag: None,
-        http_status_code: None,
-      },
-      {
-        id: "https://gone.example",
-        status: "error",
-        error_tag: Some("CRAWL_NOT_FOUND"),
-        http_status_code: Some(404),
-      },
+  let response = @exa.ContentsResponse::new(
+    results=[@exa.SearchResult::new("https://exa.ai", text="Exa is...")],
+    statuses=[
+      @exa.ContentStatus::new("https://exa.ai"),
+      @exa.ContentStatus::new(
+        "https://gone.example",
+        status="error",
+        error_tag="CRAWL_NOT_FOUND",
+        http_status_code=404,
+      ),
     ],
-    cost_dollars: None,
-    raw: Json::null(),
-  }
+  )
   assert_true(response.statuses[0].is_success())
   assert_false(response.statuses[1].is_success())
   assert_eq(response.statuses[1].error_tag, Some("CRAWL_NOT_FOUND"))
+}
+
+///|
+test "a built answer derives answer_text the way decoding does" {
+  let prose = @exa.AnswerResponse::new(answer="about 14 million")
+  assert_eq(prose.answer_text, Some("about 14 million"))
+  let structured = @exa.AnswerResponse::new(answer={ "population": 14000000 })
+  assert_eq(structured.answer_text, None)
+}
+
+///|
+test "a built synthesis output derives content_text the way decoding does" {
+  let output = @exa.SynthesisOutput::new(content="2021", grounding=[
+    @exa.Grounding::new(field="content", confidence="high", citations=[
+      @exa.Citation::new(url="https://exa.ai/about", title="About"),
+    ]),
+  ])
+  assert_eq(output.content_text, Some("2021"))
+  assert_eq(output.grounding[0].citations[0].title, Some("About"))
+}
+
+///|
+test "the shapes are public, so a struct literal works too" {
+  let result : @exa.SearchResult = {
+    url: "https://exa.ai",
+    id: "https://exa.ai",
+    title: Some("Exa"),
+    published_date: None,
+    author: None,
+    image: None,
+    favicon: None,
+    text: None,
+    summary: None,
+    highlights: [],
+    highlight_scores: [],
+    subpages: [],
+    extras: None,
+    raw: Json::null(),
+  }
+  inspect(
+    render(result),
+    content=(
+      #|Exa — https://exa.ai
+    ),
+  )
+  // and a literal can be spread from, which is handy for a table of cases
+  let untitled = { ..result, title: None, }
+  inspect(
+    render(untitled),
+    content=(
+      #|(untitled) — https://exa.ai
+    ),
+  )
+}
+
+///|
+test "the two construction styles agree" {
+  let built = @exa.SearchResult::new("https://exa.ai", title="Exa")
+  let literal : @exa.SearchResult = {
+    url: "https://exa.ai",
+    id: "https://exa.ai",
+    title: Some("Exa"),
+    published_date: None,
+    author: None,
+    image: None,
+    favicon: None,
+    text: None,
+    summary: None,
+    highlights: [],
+    highlight_scores: [],
+    subpages: [],
+    extras: None,
+    raw: Json::null(),
+  }
+  assert_eq(built, literal)
 }
 
 ///|
@@ -136,10 +179,9 @@ test "a hand-built value equals the same value decoded from json" {
   )
   let client = @exa.Client::new(transport, "k")
   let decoded = block_on(async fn() { client.search("q") })
-  let built = {
-    ..blank_result("https://exa.ai"),
-    title: Some("Exa"),
-    raw: { "url": "https://exa.ai", "title": "Exa" },
-  }
+  let built = @exa.SearchResult::new("https://exa.ai", title="Exa", raw={
+    "url": "https://exa.ai",
+    "title": "Exa",
+  })
   assert_eq(decoded.results[0], built)
 }
