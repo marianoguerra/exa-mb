@@ -132,3 +132,22 @@ test "a successful status has no error tag" {
   assert_eq(response.statuses[0].error_tag, None)
   assert_eq(response.statuses[0].http_status_code, None)
 }
+
+///|
+test "a result carrying nothing but a url is the normal /contents shape" {
+  // `/contents` answers without a title unless one was requested, so this is
+  // routine rather than an edge case.
+  let (client, _) = mock_client(
+    (
+      #|{"results":[{"url":"https://exa.ai"}],"statuses":[]}
+    ),
+  )
+  let response = block_on(async fn() {
+    client.contents(["https://exa.ai"], text=On)
+  })
+  let result = response.results[0]
+  assert_eq(result.url, "https://exa.ai")
+  assert_eq(result.id, "https://exa.ai")
+  assert_eq(result.title, None)
+  assert_eq(result.highlights, [])
+}

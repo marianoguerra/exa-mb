@@ -86,6 +86,12 @@ pub impl ToJson for TextOptions with fn to_json(self) {
 
 ///|
 /// Settings for query-relevant excerpts.
+///
+/// A highlight is a passage lifted out of the page, not a formatted snippet:
+/// it carries the page's own newlines, can run long, and may pull in
+/// navigation text such as a skip-to-content link. Code that renders one into
+/// a list or a heading generally wants to collapse whitespace and cap the
+/// length with `max_characters`.
 pub struct HighlightsOptions {
   query : String?
   /// Requires the `Exa-Beta` header; incompatible with `max_characters`.
@@ -149,6 +155,9 @@ pub impl ToJson for Text with fn to_json(self) {
 
 ///|
 /// Ask for highlights: `On` for the API's defaults, `With(..)` to configure.
+///
+/// See `HighlightsOptions` for what a returned highlight actually looks like —
+/// it is raw page text, not a tidy one-line excerpt.
 pub(all) enum Highlights {
   On
   With(HighlightsOptions)

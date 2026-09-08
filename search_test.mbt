@@ -267,3 +267,44 @@ test "a result without a url is a decode error" {
     ),
   )
 }
+
+///|
+test "an empty string decodes as present-and-empty, not as absent" {
+  // Exa returns both. A caller that wants to treat them alike should decide
+  // that itself — decoding does not collapse one into the other.
+  let (client, _) = mock_client(
+    (
+      #|{"results":[
+      #|  {"url":"https://a","title":"","author":"","publishedDate":""},
+      #|  {"url":"https://b"}
+      #|]}
+    ),
+  )
+  let response = block_on(async fn() { client.search("q") })
+  let empty = response.results[0]
+  let absent = response.results[1]
+  assert_eq(empty.title, Some(""))
+  assert_eq(empty.author, Some(""))
+  assert_eq(empty.published_date, Some(""))
+  assert_eq(absent.title, None)
+  assert_eq(absent.author, None)
+  assert_eq(absent.published_date, None)
+}
+
+///|
+test "highlights keep the page's own newlines" {
+  let (client, _) = mock_client(
+    (
+      #|{"results":[{"url":"https://a","highlights":["Skip to content\nMoonBit is\na language"]}]}
+    ),
+  )
+  let response = block_on(async fn() { client.search("q") })
+  inspect(
+    response.results[0].highlights[0],
+    content=(
+      #|Skip to content
+      #|MoonBit is
+      #|a language
+    ),
+  )
+}

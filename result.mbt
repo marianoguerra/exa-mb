@@ -66,6 +66,7 @@ pub(all) struct SearchResult {
   favicon : String?
   text : String?
   summary : String?
+  /// Raw passages from the page: they keep its newlines and can run long.
   highlights : Array[String]
   highlight_scores : Array[Double]
   subpages : Array[SearchResult]
