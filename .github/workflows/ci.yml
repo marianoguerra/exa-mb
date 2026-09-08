@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to a branch makes the in-flight run for it pointless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: Report toolchain version
+        run: moon version --all
+
+      - name: Fetch dependencies
+        run: moon update
+
+      - name: Check formatting
+        run: moon fmt --check
+
+      - name: Check the generated interface is current
+        run: |
+          moon info
+          if ! git diff --exit-code -- '*.mbti'; then
+            echo "::error::pkg.generated.mbti is out of date — run 'moon info' and commit the result"
+            exit 1
+          fi
+
+      # --target all covers wasm, wasm-gc, js and native (not llvm, which is
+      # nightly-only). --deny-warn keeps the tree warning-free.
+      - name: Check
+        run: moon check --target all --deny-warn
+
+      - name: Test
+        run: moon test --target all
