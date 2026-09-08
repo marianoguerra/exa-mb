@@ -1,0 +1,263 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "marianoguerra/exa"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub let default_base_url : String
+
+// Errors
+pub(all) suberror ExaError {
+  Api(status~ : Int, tag~ : String, message~ : String, request_id~ : String?)
+  Decode(String)
+} derive(ToJson, @debug.Debug)
+pub fn ExaError::is_payment_required(Self) -> Bool
+pub fn ExaError::is_rate_limited(Self) -> Bool
+pub fn ExaError::is_unauthorized(Self) -> Bool
+pub fn ExaError::request_id(Self) -> String?
+
+pub(all) suberror MockTransportExhausted {
+  MockTransportExhausted(String)
+} derive(@debug.Debug)
+
+// Types and methods
+pub(all) enum AnswerModel {
+  Exa
+  ExaPro
+  ExaResearch
+  ExaFast
+}
+pub impl ToJson for AnswerModel
+
+pub struct AnswerResponse {
+  request_id : String?
+  answer : Json
+  answer_text : String?
+  citations : Array[SearchResult]
+  cost_dollars : CostDollars?
+  raw : Json
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Category {
+  Company
+  People
+  Publication
+  News
+  PersonalSite
+  FinancialReport
+}
+pub impl ToJson for Category
+
+pub struct Citation {
+  url : String?
+  title : String?
+} derive(Eq, @debug.Debug)
+
+pub struct Client {
+  transport : &Transport
+  api_key : String
+  base_url : String
+}
+pub async fn Client::answer(Self, String, model? : AnswerModel, text? : Bool, system_prompt? : String, user_location? : String, output_schema? : Json) -> AnswerResponse
+pub async fn Client::contents(Self, Array[String], text? : Text, highlights? : Highlights, summary? : Summary, livecrawl_timeout? : Int, max_age_hours? : Int, subpages? : Int, subpage_target? : SubpageTarget, extras? : ExtrasOptions) -> ContentsResponse
+#deprecated
+pub async fn Client::find_similar(Self, String, num_results? : Int, category? : Category, include_domains? : Array[String], exclude_domains? : Array[String], start_published_date? : String, end_published_date? : String, start_crawl_date? : String, end_crawl_date? : String, exclude_source_domain? : Bool, contents? : ContentsOptions) -> SearchResponse
+pub fn Client::new(&Transport, String, base_url? : String) -> Self
+pub async fn Client::search(Self, String, search_type? : SearchType, num_results? : Int, category? : Category, user_location? : String, include_domains? : Array[String], exclude_domains? : Array[String], start_published_date? : String, end_published_date? : String, start_crawl_date? : String, end_crawl_date? : String, moderation? : Bool, additional_queries? : Array[String], system_prompt? : String, output_schema? : Json, contents? : ContentsOptions) -> SearchResponse
+
+pub struct ContentStatus {
+  id : String
+  status : String
+  error_tag : String?
+  http_status_code : Int?
+} derive(Eq, @debug.Debug)
+pub fn ContentStatus::is_success(Self) -> Bool
+
+pub struct ContentsOptions {
+  text : Text?
+  highlights : Highlights?
+  summary : Summary?
+  livecrawl_timeout : Int?
+  max_age_hours : Int?
+  subpages : Int?
+  subpage_target : SubpageTarget?
+  extras : ExtrasOptions?
+}
+pub fn ContentsOptions::new(text? : Text, highlights? : Highlights, summary? : Summary, livecrawl_timeout? : Int, max_age_hours? : Int, subpages? : Int, subpage_target? : SubpageTarget, extras? : ExtrasOptions) -> Self
+pub impl ToJson for ContentsOptions
+
+pub struct ContentsResponse {
+  request_id : String?
+  results : Array[SearchResult]
+  statuses : Array[ContentStatus]
+  cost_dollars : CostDollars?
+  raw : Json
+} derive(Eq, @debug.Debug)
+
+pub struct CostDollars {
+  total : Double
+  raw : Json
+} derive(Eq, @debug.Debug)
+
+pub struct Extras {
+  links : Array[String]
+  image_links : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub struct ExtrasOptions {
+  links : Int?
+  image_links : Int?
+}
+pub fn ExtrasOptions::new(links? : Int, image_links? : Int) -> Self
+pub impl ToJson for ExtrasOptions
+
+pub struct Grounding {
+  field : String?
+  confidence : String?
+  citations : Array[Citation]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Highlights {
+  On
+  With(HighlightsOptions)
+}
+pub impl ToJson for Highlights
+
+pub struct HighlightsOptions {
+  query : String?
+  dynamic : Bool?
+  max_characters : Int?
+}
+pub fn HighlightsOptions::new(query? : String, dynamic? : Bool, max_characters? : Int) -> Self
+pub impl ToJson for HighlightsOptions
+
+pub(all) struct HttpRequest {
+  meth : String
+  url : String
+  headers : Array[(String, String)]
+  body : String
+} derive(Eq, @debug.Debug)
+
+pub(all) struct HttpResponse {
+  status : Int
+  headers : Array[(String, String)]
+  body : String
+} derive(Eq, @debug.Debug)
+pub fn HttpResponse::header(Self, String) -> String?
+
+pub struct MockTransport {
+  queue : Array[HttpResponse]
+  seen : Array[HttpRequest]
+  mut position : Int
+}
+pub fn MockTransport::json(String, status? : Int) -> Self
+pub fn MockTransport::last_body(Self) -> Json?
+pub fn MockTransport::last_request(Self) -> HttpRequest?
+pub fn MockTransport::new(Array[HttpResponse]) -> Self
+pub fn MockTransport::requests(Self) -> Array[HttpRequest]
+pub impl Transport for MockTransport
+
+pub struct SearchResponse {
+  request_id : String?
+  results : Array[SearchResult]
+  output : SynthesisOutput?
+  cost_dollars : CostDollars?
+  search_time : Double?
+  raw : Json
+} derive(Eq, @debug.Debug)
+
+pub struct SearchResult {
+  url : String
+  id : String
+  title : String?
+  published_date : String?
+  author : String?
+  image : String?
+  favicon : String?
+  text : String?
+  summary : String?
+  highlights : Array[String]
+  highlight_scores : Array[Double]
+  subpages : Array[SearchResult]
+  extras : Extras?
+  raw : Json
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SearchType {
+  Auto
+  Fast
+  Instant
+  DeepLite
+  Deep
+  DeepReasoning
+}
+pub impl ToJson for SearchType
+
+pub(all) enum Section {
+  Header
+  Navigation
+  Banner
+  Body
+  Sidebar
+  Footer
+  Metadata
+}
+pub impl ToJson for Section
+
+pub(all) enum SubpageTarget {
+  Keyword(String)
+  Keywords(Array[String])
+}
+pub impl ToJson for SubpageTarget
+
+pub(all) enum Summary {
+  On
+  With(SummaryOptions)
+}
+pub impl ToJson for Summary
+
+pub struct SummaryOptions {
+  query : String?
+  schema : Json?
+}
+pub fn SummaryOptions::new(query? : String, schema? : Json) -> Self
+pub impl ToJson for SummaryOptions
+
+pub struct SynthesisOutput {
+  content : Json
+  content_text : String?
+  grounding : Array[Grounding]
+  raw : Json
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Text {
+  On
+  With(TextOptions)
+}
+pub impl ToJson for Text
+
+pub struct TextOptions {
+  max_characters : Int?
+  include_html_tags : Bool?
+  verbosity : Verbosity?
+  include_sections : Array[Section]?
+  exclude_sections : Array[Section]?
+}
+pub fn TextOptions::new(max_characters? : Int, include_html_tags? : Bool, verbosity? : Verbosity, include_sections? : Array[Section], exclude_sections? : Array[Section]) -> Self
+pub impl ToJson for TextOptions
+
+pub(all) enum Verbosity {
+  Compact
+  Standard
+  Full
+}
+pub impl ToJson for Verbosity
+
+// Type aliases
+
+// Traits
+pub(open) trait Transport {
+  async fn send(Self, HttpRequest) -> HttpResponse
+}

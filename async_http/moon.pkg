@@ -1,0 +1,9 @@
+import {
+  "marianoguerra/exa",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+  "moonbitlang/core/env",
+  "moonbitlang/core/debug",
+}
+
+supported_targets = "all-wasm-gc"

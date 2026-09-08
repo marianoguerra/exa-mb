@@ -1,0 +1,10 @@
+import {
+  "marianoguerra/exa",
+  "marianoguerra/exa/async_http" @exa_http,
+  "moonbitlang/async",
+  "moonbitlang/core/env",
+}
+
+supported_targets = "+native"
+
+pkgtype(kind: "executable")
